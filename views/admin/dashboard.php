@@ -1,7 +1,15 @@
 <?php
 require_once '../../includes/auth_check.php';
+
+// Definir los roles permitidos para esta página (Admin)
+$allowRole = [6];
 require_once '../../includes/rol_check.php';
-verificarRol('Administrador');
+
+$pageTitle = "Dashboard";
+
+require_once '../../includes/header.php';    // Incluir la cabecera
+require_once '../../includes/sidebar.php';
+
 ?>
 <!-- HTML del dashboard -->
 <!DOCTYPE html>
@@ -46,3 +54,7 @@ verificarRol('Administrador');
     </section>
 </body>
 </html>
+
+<?php
+require_once '../../includes/footer.php';    // Incluir el pie de página
+?>

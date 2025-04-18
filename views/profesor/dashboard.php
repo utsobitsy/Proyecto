@@ -1,7 +1,14 @@
 <?php
 require_once '../../includes/auth_check.php';
+
+$pageTitle = "Dashboard";
+
+require_once '../../includes/header.php';    // Incluir la cabecera
+require_once '../../includes/sidebar.php';
+
+// Definir los roles permitidos para esta página
+$allowRole = [3];
 require_once '../../includes/rol_check.php';
-verificarRol('Profesor');
 
 // Cargar datos del usuario desde la sesión
 $usuario = (object)[
@@ -41,3 +48,6 @@ $materias = [
     </section>
 </body>
 </html>
+<?php
+require_once '../../includes/footer.php';    // Incluir el pie de página
+?>

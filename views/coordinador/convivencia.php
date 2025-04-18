@@ -1,3 +1,16 @@
+<?php
+require_once '../../includes/auth_check.php';
+
+// Definir los roles permitidos para esta página
+$allowRole = [5];
+require_once '../../includes/rol_check.php';
+
+$pageTitle = "Dashboard";
+
+require_once '../../includes/header.php';    // Incluir la cabecera
+require_once '../../includes/sidebar.php';
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,3 +52,6 @@
     </section>
 </body>
 </html>
+<?php
+require_once '../../includes/footer.php';    // Incluir el pie de página
+?>
