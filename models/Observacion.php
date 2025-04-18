@@ -1,52 +1,34 @@
 <?php
-// Observacion.php
 require_once __DIR__ . '/../config/db.php';
 
 class Observacion {
-    private $conn;
-
-    public function __construct($pdo) {
-        $this->conn = $pdo;
+    private $pdo;
+    public function __construct() {
+        $this->pdo = Database::getInstance()->getConnection();
     }
 
-    public function registrar($id_estudiante, $tipo, $descripcion, $fecha, $registrado_por) {
-        $stmt = $this->conn->prepare("
-            INSERT INTO observaciones (id_estudiante, tipo, descripcion, fecha, registrado_por)
-            VALUES (:id_estudiante, :tipo, :descripcion, :fecha, :registrado_por)
-        ");
-        return $stmt->execute([
-            ':id_estudiante' => $id_estudiante,
-            ':tipo' => $tipo,
-            ':descripcion' => $descripcion,
-            ':fecha' => $fecha,
-            ':registrado_por' => $registrado_por
+    // Crear observación
+    public function create(array $data): int {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO observaciones (id_emisor, id_receptor, tipo, comentario, fecha)
+             VALUES (:emi, :rec, :tipo, :comentario, NOW())"
+        );
+        $stmt->execute([
+            ':emi'       => $data['id_emisor'],
+            ':rec'       => $data['id_receptor'],
+            ':tipo'      => $data['tipo'],
+            ':comentario'=> $data['comentario'],
         ]);
+        return (int)$this->pdo->lastInsertId();
     }
 
-    public function obtenerPorEstudiante($id_estudiante) {
-        $stmt = $this->conn->prepare("SELECT * FROM observaciones WHERE id_estudiante = :id_estudiante");
-        $stmt->bindParam(':id_estudiante', $id_estudiante, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function obtenerEstadisticasPorGrupo($id_grupo) {
-        $stmt = $this->conn->prepare("
-            SELECT tipo, COUNT(*) as cantidad
-            FROM observaciones o
-            JOIN usuarios u ON o.id_estudiante = u.id
-            WHERE u.id_grupo = :id_grupo
-            GROUP BY tipo
-        ");
-        $stmt->bindParam(':id_grupo', $id_grupo, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getAll() {
-        $stmt = $this->conn->prepare("SELECT * FROM observaciones");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Historial de observaciones por estudiante
+    public function getByReceptor(int $idReceptor): array {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM observaciones WHERE id_receptor = :rec ORDER BY fecha DESC"
+        );
+        $stmt->execute([':rec' => $idReceptor]);
+        return $stmt->fetchAll();
     }
 }
 ?>

@@ -1,75 +1,57 @@
 <?php
-// Nota.php
 require_once __DIR__ . '/../config/db.php';
 
 class Nota {
-    private $conn;
-
-    public function __construct($pdo) {
-        $this->conn = $pdo;
+    private $pdo;
+    public function __construct() {
+        $this->pdo = Database::getInstance()->getConnection();
     }
 
-    public function obtenerPorEstudiante($id_estudiante, $periodo = null) {
-        $sql = "SELECT * FROM notas WHERE id_estudiante = :id_estudiante";
-        if ($periodo) {
-            $sql .= " AND periodo = :periodo";
-        }
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id_estudiante', $id_estudiante, PDO::PARAM_INT);
-        if ($periodo) {
-            $stmt->bindParam(':periodo', $periodo);
-        }
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Obtener notas por estudiante
+    public function getByEstudiante(int $idEstudiante): array {
+        $stmt = $this->pdo->prepare(
+            "SELECT n.*, m.nombre AS materia FROM notas n
+             JOIN materias m ON n.id_materia = m.id
+             WHERE id_estudiante = :id"
+        );
+        $stmt->execute([':id' => $idEstudiante]);
+        return $stmt->fetchAll();
     }
 
-    public function obtenerPromedioPorMateria($id_estudiante) {
-        $stmt = $this->conn->prepare("
-            SELECT materia, AVG(calificacion) as promedio
-            FROM notas
-            WHERE id_estudiante = :id_estudiante
-            GROUP BY materia
-        ");
-        $stmt->bindParam(':id_estudiante', $id_estudiante, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Agregar nueva nota
+    public function create(array $data): int {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO notas (id_estudiante, id_materia, calificacion, descripcion, periodo)
+             VALUES (:idest, :idmat, :cal, :desc, :per)"
+        );
+        $stmt->execute([
+            ':idest' => $data['id_estudiante'],
+            ':idmat' => $data['id_materia'],
+            ':cal'   => $data['calificacion'],
+            ':desc'  => $data['descripcion'],
+            ':per'   => $data['periodo'],
+        ]);
+        return (int)$this->pdo->lastInsertId();
     }
 
-    public function guardar($id_estudiante, $materia, $calificacion, $descripcion, $periodo) {
-        $stmt = $this->conn->prepare("
-            INSERT INTO notas (id_estudiante, materia, calificacion, descripcion, periodo)
-            VALUES (:id_estudiante, :materia, :calificacion, :descripcion, :periodo)
-        ");
+    // Actualizar nota
+    public function update(int $id, array $data): bool {
+        $stmt = $this->pdo->prepare(
+            "UPDATE notas SET calificacion = :cal, descripcion = :desc, periodo = :per
+             WHERE id = :id"
+        );
         return $stmt->execute([
-            ':id_estudiante' => $id_estudiante,
-            ':materia' => $materia,
-            ':calificacion' => $calificacion,
-            ':descripcion' => $descripcion,
-            ':periodo' => $periodo
+            ':cal'  => $data['calificacion'],
+            ':desc' => $data['descripcion'],
+            ':per'  => $data['periodo'],
+            ':id'   => $id,
         ]);
     }
 
-    public function obtenerPorEstudiantes($estudiantes) {
-        if (empty($estudiantes)) return [];
-
-        $placeholders = implode(',', array_fill(0, count($estudiantes), '?'));
-        $ids = array_column($estudiantes, 'id');
-        $stmt = $this->conn->prepare("SELECT * FROM notas WHERE id_estudiante IN ($placeholders)");
-        $stmt->execute($ids);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function editarNota($idNota, $nuevaNota, $descripcion) {
-        $stmt = $this->conn->prepare("
-            UPDATE notas
-            SET calificacion = :nuevaNota, descripcion = :descripcion
-            WHERE id = :idNota
-        ");
-        return $stmt->execute([
-            ':idNota' => $idNota,
-            ':nuevaNota' => $nuevaNota,
-            ':descripcion' => $descripcion
-        ]);
+    // Eliminar nota
+    public function delete(int $id): bool {
+        $stmt = $this->pdo->prepare("DELETE FROM notas WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }
 ?>

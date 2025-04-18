@@ -1,32 +1,37 @@
 <?php
+require_once __DIR__ . '/../config/db.php';
 
 class Mensaje {
-    private $db;
-
-    public function __construct($pdo) {
-        $this->db = $pdo;
+    private $pdo;
+    public function __construct() {
+        $this->pdo = Database::getInstance()->getConnection();
     }
 
-    public function enviar($emisorId, $receptorId, $asunto, $contenido) {
-        $query = $this->db->prepare("INSERT INTO mensajes (emisor_id, receptor_id, asunto, contenido) VALUES (?, ?, ?, ?)");
-        return $query->execute([$emisorId, $receptorId, $asunto, $contenido]);
+    // Enviar mensaje
+    public function send(array $data): int {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO mensajes (id_emisor, id_receptor, asunto, contenido, creado_en)
+             VALUES (:emi, :rec, :asunto, :contenido, NOW())"
+        );
+        $stmt->execute([
+            ':emi'      => $data['id_emisor'],
+            ':rec'      => $data['id_receptor'],
+            ':asunto'   => $data['asunto'],
+            ':contenido'=> $data['contenido'],
+        ]);
+        return (int)$this->pdo->lastInsertId();
     }
 
-    public function listarRecibidos($usuarioId) {
-        $query = $this->db->prepare("SELECT * FROM mensajes WHERE receptor_id = ? ORDER BY fecha_envio DESC");
-        $query->execute([$usuarioId]);
-        return $query->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function listarEnviados($usuarioId) {
-        $query = $this->db->prepare("SELECT * FROM mensajes WHERE emisor_id = ? ORDER BY fecha_envio DESC");
-        $query->execute([$usuarioId]);
-        return $query->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function marcarLeido($mensajeId) {
-        $query = $this->db->prepare("UPDATE mensajes SET leido = 1 WHERE id = ?");
-        return $query->execute([$mensajeId]);
+    // Obtener conversaciones entre dos usuarios
+    public function getConversation(int $u1, int $u2): array {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM mensajes
+             WHERE (id_emisor = :u1 AND id_receptor = :u2)
+                OR (id_emisor = :u2 AND id_receptor = :u1)
+             ORDER BY creado_en ASC"
+        );
+        $stmt->execute([':u1' => $u1, ':u2' => $u2]);
+        return $stmt->fetchAll();
     }
 }
 ?>
