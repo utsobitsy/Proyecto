@@ -1,7 +1,9 @@
 <?php
-session_start();
-if (!isset($_SESSION['usuario'])) {
-    header("Location: /views/auth/login.php");
-    exit();
+session_start(); // Asegúrate de que la sesión esté iniciada
+
+if (!isset($_SESSION['id'])) {
+    // Redirigir al usuario a la página de login si no está logueado
+    header('Location: /auth/login.php'); // Ajusta la ruta si es necesario
+    exit;
 }
 ?>
