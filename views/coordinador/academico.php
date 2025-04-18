@@ -1,57 +1,43 @@
 <?php
-require_once '../../includes/auth_check.php';
-
-// Definir los roles permitidos para esta página
-$allowRole = [4];
-require_once '../../includes/rol_check.php';
-
-$pageTitle = "Dashboard";
-
-require_once '../../includes/header.php';    // Incluir la cabecera
-require_once '../../includes/sidebar.php';
+$pageTitle = 'Supervisión Académica';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
-<!-- HTML del dashboard -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Coordinador Académico</title>
-    <link rel="stylesheet" href="/assets/css/coordinador.css">
-</head>
-<body>
-    <header>
-        <h1>Bienvenido, Coordinador Académico</h1>
-        <nav>
-            <a href="/coordinador/dashboardAcademico">Resumen Académico</a>
-            <a href="/coordinador/verObservaciones">Ver Observaciones</a>
-        </nav>
-    </header>
-    <section>
-        <h2>Estudiantes y Notas</h2>
-        <table>
-            <thead>
+<div class="container mt-4">
+    <h2>Supervisión Académica</h2>
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['flash_success']); unset($_SESSION['flash_success']); ?></div>
+    <?php endif; ?>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Materia</th>
+                <th>Nota</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($grades as $g): ?>
                 <tr>
-                    <th>Estudiante</th>
-                    <th>Materia</th>
-                    <th>Nota</th>
-                    <th>Acciones</th>
+                    <td><?php echo htmlspecialchars($g['estudiante_nombre']); ?></td>
+                    <td><?php echo htmlspecialchars($g['materia_nombre']); ?></td>
+                    <td><?php echo htmlspecialchars($g['calificacion']); ?></td>
+                    <td>
+                        <a href="/notas/edit?id=<?php echo (int)$g['id']; ?>" class="btn btn-sm btn-primary">Editar</a>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($notas as $nota): ?>
-                    <tr>
-                        <td><?php echo $nota->estudiante_nombre; ?></td>
-                        <td><?php echo $nota->materia_nombre; ?></td>
-                        <td><?php echo $nota->calificacion; ?></td>
-                        <td><a href="/coordinador/editarNota/<?php echo $nota->id; ?>">Editar</a></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </section>
-</body>
-</html>
-<?php
-require_once '../../includes/footer.php';    // Incluir el pie de página
-?>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <nav aria-label="Paginación">
+        <ul class="pagination">
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                </li>
+            <?php endfor; ?>
+        </ul>
+    </nav>
+</div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

@@ -7,6 +7,24 @@ class Observacion {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    // Obtener todas las observaciones con emisor y receptor
+    public function getAllOrdered(): array {
+        $stmt = $this->pdo->query(
+            "SELECT o.*, em.nombre AS emisor_nombre, rc.nombre AS receptor_nombre
+             FROM observaciones o
+             JOIN usuarios em ON o.id_emisor = em.id
+             JOIN usuarios rc ON o.id_receptor = rc.id
+             ORDER BY o.fecha DESC"
+        );
+        return $stmt->fetchAll();
+    }
+
+    // Eliminar observación
+    public function delete(int $id): bool {
+        $stmt = $this->pdo->prepare("DELETE FROM observaciones WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
     // Crear observación
     public function create(array $data): int {
         $stmt = $this->pdo->prepare(

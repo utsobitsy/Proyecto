@@ -60,3 +60,112 @@ class CoordinadorController {
     }
 }
 ?>
+
+<?php
+// Refactorización para funcionalidades Académico y Convivencia
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../models/Nota.php';
+require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../models/Observacion.php';
+
+class CoordinadorController {
+    private $notaModel;
+    private $userModel;
+    private $obsModel;
+
+    public function __construct() {
+        session_start();
+        // Solo Coordinadores pueden acceder
+        if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'Coordinador') {
+            header('Location: /auth/denied_access');
+            exit;
+        }
+        $this->notaModel = new Nota();
+        $this->userModel = new Usuario();
+        $this->obsModel  = new Observacion();
+    }
+
+    // Vista Académico: supervisión de calificaciones
+    public function academico() {
+        // Paginación simple
+        $page = isset($_GET['page']) ? max(1, (int)\$_GET['page']) : 1;
+        \$perPage = 20;
+        \$offset = (\$page - 1) * \$perPage;
+
+        // Obtener todas las notas con JOIN para mostrar nombres
+        \$grades = \$this->notaModel->getPaginatedWithStudentAndSubject(\$perPage, \$offset);
+        \$total  = \$this->notaModel->countAll();
+        \$totalPages = ceil(\$total / \$perPage);
+
+        include __DIR__ . '/../views/coordinador/academico.php';
+    }
+
+    // Vista Convivencia: gestión de observaciones disciplinarias
+    public function convivencia() {
+        \$observations = \$this->obsModel->getAllOrdered();
+        include __DIR__ . '/../views/coordinador/convivencia.php';
+    }
+
+    // Mostrar formulario para agregar observación
+    public function createObservation() {
+        \$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        // Lista de estudiantes para seleccionar receptor
+        \$students = \$this->userModel->getAllByRole('Estudiante');
+        include __DIR__ . '/../views/coordinador/observacion_form.php';
+    }
+
+    // Guardar nueva observación
+    public function storeObservation() {
+        if (\$_SERVER['REQUEST_METHOD'] !== 'POST' || 
+            !hash_equals(\$_SESSION['csrf_token'] ?? '', \$_POST['csrf_token'] ?? '')) {
+            die('Acceso inválido');
+        }
+
+        \$idRec = filter_input(INPUT_POST, 'id_receptor', FILTER_VALIDATE_INT);
+        \$tipo  = trim(\$_POST['tipo'] ?? '');
+        \$comentario = trim(\$_POST['comentario'] ?? '');
+
+        if (!\$idRec || !\$tipo || !\$comentario) {
+            \$_SESSION['flash_error'] = 'Todos los campos son obligatorios.';
+            header('Location: /coordinador/convivencia/create');
+            exit;
+        }
+
+        try {
+            \$this->obsModel->create([
+                'id_emisor'   => \$_SESSION['user_id'],
+                'id_receptor' => \$idRec,
+                'tipo'        => \$tipo,
+                'comentario'  => \$comentario
+            ]);
+            \$_SESSION['flash_success'] = 'Observación guardada correctamente.';
+        } catch (Exception \$e) {
+            \$_SESSION['flash_error'] = 'Error al guardar observación.';
+        }
+
+        header('Location: /coordinador/convivencia');
+        exit;
+    }
+
+    // Eliminar observación
+    public function destroyObservation() {
+        if (\$_SERVER['REQUEST_METHOD'] !== 'POST' || 
+            !hash_equals(\$_SESSION['csrf_token'] ?? '', \$_POST['csrf_token'] ?? '')) {
+            die('Acceso inválido');
+        }
+        \$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+        if (!\$id) {
+            \$_SESSION['flash_error'] = 'ID inválido.';
+        } else {
+            try {
+                \$this->obsModel->delete(\$id);
+                \$_SESSION['flash_success'] = 'Observación eliminada.';
+            } catch (Exception \$e) {
+                \$_SESSION['flash_error'] = 'Error al eliminar observación.';
+            }
+        }
+        header('Location: /coordinador/convivencia');
+        exit;
+    }
+}
+?>

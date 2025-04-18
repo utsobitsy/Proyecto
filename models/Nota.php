@@ -7,6 +7,28 @@ class Nota {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    // Obtener notas paginadas con nombre de estudiante y materia
+    public function getPaginatedWithStudentAndSubject(int $limit, int $offset): array {
+        $stmt = $this->pdo->prepare(
+            "SELECT n.*, u.nombre AS estudiante_nombre, m.nombre AS materia_nombre
+             FROM notas n
+             JOIN usuarios u ON n.id_estudiante = u.id
+             JOIN materias m ON n.id_materia = m.id
+             ORDER BY n.created_at DESC
+             LIMIT :limit OFFSET :offset"
+        );
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    // Contar total de notas para paginación
+    public function countAll(): int {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM notas");
+        return (int)$stmt->fetchColumn();
+    }
+
     // Obtener notas por estudiante
     public function getByEstudiante(int $idEstudiante): array {
         $stmt = $this->pdo->prepare(

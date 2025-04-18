@@ -18,8 +18,25 @@ class Usuario {
     public function findById(int $id): ?array {
         $stmt = $this->pdo->prepare("SELECT id, nombre, correo, rol FROM usuarios WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        $result = $stmt->fetch();
-        return $result !== false ? $result : null;
+        return $stmt->fetch() ?: null;
+    }
+
+    // Obtener usuario por email
+    public function findByEmail(string $email): ?array {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, nombre, correo, contraseña, rol FROM usuarios WHERE correo = :email"
+        );
+        $stmt->execute([':email' => $email]);
+        return $stmt->fetch() ?: null;
+    }
+
+    // Obtener todos los usuarios por rol
+    public function getAllByRole(string $role): array {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, nombre, correo, rol FROM usuarios WHERE FIND_IN_SET(:role, rol)"
+        );
+        $stmt->execute([':role' => $role]);
+        return $stmt->fetchAll();
     }
 
     // Crear nuevo usuario
@@ -55,4 +72,3 @@ class Usuario {
         return $stmt->execute([':id' => $id]);
     }
 }
-?>

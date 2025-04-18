@@ -1,22 +1,24 @@
-<!-- Vista para ingresar las credenciales -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/assets/css/auth.css">
-</head>
-<body>
-    <form action="/auth/login.php" method="POST">
-        <h2>Iniciar sesión</h2>
-        <label for="email">Correo electrónico:</label>
-        <input type="email" id="email" name="email" required>
-        
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" name="password" required>
-        
-        <button type="submit">Ingresar</button>
+<?php
+template_header('Iniciar sesión'); // función que incluye header.php y establece título
+?>
+<div class="container mt-5">
+    <h2 class="mb-4">Iniciar sesión</h2>
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+        <div class="alert alert-danger"><?php echo $_SESSION['flash_error']; unset(\$_SESSION['flash_error']); ?></div>
+    <?php endif; ?>
+    <form action="/auth/login" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(\$_SESSION['csrf_token']); ?>">
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input type="email" id="email" name="email" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Ingresar</button>
     </form>
-</body>
-</html>
+</div>
+<?php
+template_footer(); // función que incluye footer.php
+?>

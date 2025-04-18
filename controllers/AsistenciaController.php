@@ -1,45 +1,102 @@
 <?php
-require_once __DIR__ . '/../models/Asistencia.php';
+// Refactorización usando modelo, validación, CSRF y paginación
+
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../models/Asistencia.php';
+require_once __DIR__ . '/../models/Usuario.php';
 
 class AsistenciaController {
     private $asistenciaModel;
+    private $userModel;
 
-    public function __construct($pdo) {
-        $this->asistenciaModel = new Asistencia($pdo);
-    }
-
-    public function registrarAsistencia($datos) {
-        // Error: Call to unknown method: Asistencia::registrar()
-        // Solución: El modelo Asistencia tiene un método registrarAsistencia($id_estudiante, $fecha, $estado).
-        // Necesitas extraer los datos del array $datos y pasarlos al método correcto.
-        if (is_array($datos) && isset($datos['id_estudiante'], $datos['fecha'], $datos['estado'])) {
-            return $this->asistenciaModel->registrarAsistencia(
-                $datos['id_estudiante'],
-                $datos['fecha'],
-                $datos['estado']
-            );
+    public function __construct() {
+        session_start();
+        // Solo Profesores y Coordinadores pueden gestionar asistencia
+        $rol = $_SESSION['rol'] ?? null,
+        if (!in_array($rol, ['Profesor', 'Coordinador'])) {
+            header('Location: /auth/denied_access');
+            exit;
         }
-        return false; // O manejar el error de datos incorrectos
+        $this->asistenciaModel = new Asistencia();
+        $this->userModel = new Usuario();
     }
 
-    public function obtenerAsistenciaPorCurso($cursoId, $fecha = null) {
-        // Error: Call to unknown method: Asistencia::porCurso()
-        // Solución: El modelo Asistencia no tiene un método porCurso().
-        // Tienes un método obtenerPorEstudiante($id_estudiante).
-        // Necesitas implementar un método porCurso() en el modelo Asistencia
-        // o usar el método existente si la lógica lo permite (quizás filtrando por curso en la consulta).
-        // Por ahora, devolviendo un array vacío ya que no existe el método:
-        return [];
+    // Listar asistencia (opcional por estudiante y rango de fecha)
+    public function index() {
+        // Parámetros de filtro
+        $desde      = $_GET['desde'] ?? date('Y-m-d');
+        $hasta      = $_GET['hasta'] ?? date('Y-m-d');
+        $idEst      = isset($_GET['id_estudiante']) ? (int)$_GET['id_estudiante'] : null;
+
+        if ($idEst) {
+            $records = $this->asistenciaModel->getByEstudiante($idEst, $desde, $hasta);
+        } else {
+            // TODO: implementar getAllByDateRange en el modelo Asistencia
+            $records = $this->asistenciaModel->getAllByDateRange($desde, $hasta);
+        }
+
+        include __DIR__ . '/../views/coordinador/asistencia.php';
     }
 
-    public function obtenerResumenPorEstudiante($estudianteId) {
-        // Error: Call to unknown method: Asistencia::resumenPorEstudiante()
-        // Solución: El modelo Asistencia solo tiene obtenerPorEstudiante($id_estudiante).
-        // Necesitas implementar un método resumenPorEstudiante() en el modelo Asistencia
-        // que realice la lógica para obtener el resumen.
-        // Por ahora, usando el método existente:
-        return $this->asistenciaModel->obtenerPorEstudiante($estudianteId);
+    // Mostrar formulario para registrar asistencia
+    public function create() {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        // Obtener lista de estudiantes
+        $students = $this->userModel->getAllByRole('Estudiante');
+        include __DIR__ . '/../views/coordinador/asistencia_form.php';
+    }
+
+    // Guardar nuevo registro de asistencia
+    public function store() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || 
+            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+            die('Acceso inválido');
+        }
+
+        // Validar datos
+        $idEstudiante = filter_input(INPUT_POST, 'id_estudiante', FILTER_VALIDATE_INT);
+        $fecha        = $_POST['fecha'] ?? date('Y-m-d');
+        $presente     = isset($_POST['presente']) && $_POST['presente'] == '1';
+
+        if (!$idEstudiante) {
+            $_SESSION['flash_error'] = 'Estudiante inválido.';
+            header('Location: /asistencia/create');
+            exit;
+        }
+
+        try {
+            $this->asistenciaModel->mark($idEstudiante, $fecha, $presente);
+            $_SESSION['flash_success'] = 'Asistencia registrada correctamente.';
+        } catch (\Exception $e) {
+            $_SESSION['flash_error'] = 'Error al registrar asistencia.';
+        }
+
+        header('Location: /asistencia');
+        exit;
+    }
+
+    // Eliminar un registro de asistencia
+    public function destroy() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || 
+            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+            die('Acceso inválido');
+        }
+
+        $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+        if (!$id) {
+            $_SESSION['flash_error'] = 'ID de asistencia inválido.';
+        } else {
+            try {
+                // TODO: implementar delete en modelo Asistencia
+                $this->asistenciaModel->delete($id);
+                $_SESSION['flash_success'] = 'Registro de asistencia eliminado.';
+            } catch (\Exception $e) {
+                $_SESSION['flash_error'] = 'Error al eliminar registro.';
+            }
+        }
+
+        header('Location: /asistencia');
+        exit;
     }
 }
 ?>
