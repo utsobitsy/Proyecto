@@ -1,0 +1,15 @@
+# Habilitar la reescritura de URLs
+RewriteEngine On
+
+# Redirigir a un indice amigable si no se proporciona un archivo especifico
+RewriteBase /nombre-proyecto/
+
+# Reglas de reescritura para URLs amigables
+RewriteRule ^login$ /ruta [L]
+RewriteRule ^dashboard$ /ruta [L]
+RewriteRule ^notas$ /ruta [L]
+RewriteRule ^asistencia$ /ruta [L]
+RewriteRule ^usuarios$ /ruta [L]
+
+# Redirigir todas las demás solicitudes a index.php
+RewriteRule ^(.*)$ /ruta [QSA,L]
