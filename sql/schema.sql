@@ -1,92 +1,137 @@
--- Crear la base de datos
-CREATE DATABASE IF NOT EXISTS colegio_system;
-USE colegio_system;
+--  schema.sql (Versión Modificada)
 
--- Tabla de Roles
-CREATE TABLE IF NOT EXISTS roles (
+--  Eliminar la base de datos si existe y crearla de nuevo
+DROP DATABASE IF EXISTS sistema_colegio;
+CREATE DATABASE sistema_colegio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE sistema_colegio;
+
+--  Tabla de roles
+CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE
-);
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT
+) ENGINE=InnoDB;
 
--- Insertar roles iniciales
-INSERT INTO roles (nombre) VALUES 
-('Estudiante'), 
-('Padre'), 
-('Profesor'), 
-('Coordinador Académico'), 
-('Coordinador de Convivencia'), 
-('Administrador');
-
--- Tabla de Usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
+--  Tabla de usuarios
+CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    contraseña VARCHAR(255) NOT NULL,
-    nombre_completo VARCHAR(100) NOT NULL,
     id_rol INT NOT NULL,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_rol) REFERENCES roles(id)
-);
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(255) NOT NULL,
+    id_padre INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_rol) REFERENCES roles(id),
+    FOREIGN KEY (id_padre) REFERENCES usuarios(id)
+) ENGINE=InnoDB;
 
--- Tabla de Materias
-CREATE TABLE IF NOT EXISTS materias (
+--  Tabla de cursos
+CREATE TABLE cursos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT
-);
+    descripcion TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- Tabla de Notas
-CREATE TABLE IF NOT EXISTS notas (
+--  Tabla de grupos
+CREATE TABLE grupos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
+    id_curso INT NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    anio INT NOT NULL,
+    FOREIGN KEY (id_curso) REFERENCES cursos(id)
+) ENGINE=InnoDB;
+
+--  Tabla de materias
+CREATE TABLE materias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+--  Tabla de horarios
+CREATE TABLE horarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_grupo INT NOT NULL,
     id_materia INT NOT NULL,
-    periodo VARCHAR(20) NOT NULL,
-    calificacion DECIMAL(5,2),
-    descripcion TEXT,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
-    FOREIGN KEY (id_materia) REFERENCES materias(id)
-);
-
--- Tabla de Asistencia
-CREATE TABLE IF NOT EXISTS asistencia (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    fecha DATE NOT NULL,
-    estado ENUM('Presente', 'Ausente', 'Tarde') NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- Tabla de Observaciones
-CREATE TABLE IF NOT EXISTS observaciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    tipo ENUM('Académica', 'Disciplinaria') NOT NULL,
-    descripcion TEXT,
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- Tabla de Horarios
-CREATE TABLE IF NOT EXISTS horarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    dia_semana ENUM('Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Dia 5', 'Dia 6') NOT NULL,
+    dia VARCHAR(10) NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
-    id_materia INT NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
+    tipo ENUM('normal', 'examen') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_grupo) REFERENCES grupos(id),
     FOREIGN KEY (id_materia) REFERENCES materias(id)
-);
+) ENGINE=InnoDB;
 
--- Tabla de Mensajes
-CREATE TABLE IF NOT EXISTS mensajes (
+--  Tabla de asistencias
+CREATE TABLE asistencias (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    emisor_id INT NOT NULL,
-    receptor_id INT NOT NULL,
-    asunto VARCHAR(255),
-    contenido TEXT,
-    fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_estudiante INT NOT NULL,
+    id_grupo INT NOT NULL,
+    fecha DATE NOT NULL,
+    estado ENUM('Presente', 'Ausente', 'Tarde') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_estudiante) REFERENCES usuarios(id),
+    FOREIGN KEY (id_grupo) REFERENCES grupos(id)
+) ENGINE=InnoDB;
+
+--  Tabla de notas
+CREATE TABLE notas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante INT NOT NULL,
+    id_materia INT NOT NULL,
+    calificacion DECIMAL(5, 2) NOT NULL,
+    descripcion TEXT,
+    periodo VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_estudiante) REFERENCES usuarios(id),
+    FOREIGN KEY (id_materia) REFERENCES materias(id)
+) ENGINE=InnoDB;
+
+--  Tabla de observaciones
+CREATE TABLE observaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    descripcion TEXT NOT NULL,
+    fecha DATE NOT NULL,
+    registrado_por INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_estudiante) REFERENCES usuarios(id),
+    FOREIGN KEY (registrado_por) REFERENCES usuarios(id)
+) ENGINE=InnoDB;
+
+--  Tabla de mensajes
+CREATE TABLE mensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_emisor INT NOT NULL,
+    id_receptor INT NOT NULL,
+    asunto VARCHAR(255) NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     leido BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (emisor_id) REFERENCES usuarios(id),
-    FOREIGN KEY (receptor_id) REFERENCES usuarios(id)
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_emisor) REFERENCES usuarios(id),
+    FOREIGN KEY (id_receptor) REFERENCES usuarios(id)
+) ENGINE=InnoDB;
+
+--  Tabla de cursos_estudiantes (Tabla de unión para la relación muchos a muchos entre cursos y estudiantes)
+CREATE TABLE cursos_estudiantes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_curso INT NOT NULL,
+    id_estudiante INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_curso) REFERENCES cursos(id),
+    FOREIGN KEY (id_estudiante) REFERENCES usuarios(id),
+    UNIQUE KEY (id_curso, id_estudiante) --  Evita duplicados en la asignación de estudiantes a cursos
+) ENGINE=InnoDB;
