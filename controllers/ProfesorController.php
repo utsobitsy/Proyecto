@@ -1,26 +1,21 @@
 <?php
-require_once __DIR__ . '/../models/Observacion.php';
+// Funcionalidades para profesor: acceso al modulo de notas, asistencia y observaciones
+// Refactorización del controlador
+
 require_once __DIR__ . '/../config/db.php';
 
-class ObservacionesController {
-    private $observacionModel;
-
-    public function __construct($pdo) {
-        $this->observacionModel = new Observacion($pdo);
+class ProfesorController {
+    public function __construct() {
+        session_start();
+        if (!isset($_SESSION['user_id']) || $_SESSION['rol'] !== 'Profesor') {
+            header('Location: /auth/denied_access');
+            exit;
+        }
     }
 
-    public function agregarObservacion($datos) {
-        return $this->observacionModel->registrar(
-            $datos['id_estudiante'],
-            $datos['tipo'],
-            $datos['descripcion'],
-            $datos['fecha'],
-            $datos['registrado_por']
-        );
-    }
-
-    public function obtenerPorEstudiante($estudianteId) {
-        return $this->observacionModel->obtenerPorEstudiante($estudianteId);
+    // Dashboard del profesor: enlaces a gestión de módulos
+    public function dashboard() {
+        include __DIR__ . '/../views/profesor/dashboard.php';
     }
 }
 ?>

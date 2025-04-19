@@ -1,53 +1,49 @@
 <?php
-require_once '../../includes/auth_check.php';
+// views/profesor/dashboard.php
+require_once __DIR__ . '/../../includes/auth_check.php';
+// Solo rol Profesor
+$allowRole = ['Profesor'];
+require_once __DIR__ . '/../../includes/rol_check.php';
 
-$pageTitle = "Dashboard";
-
-require_once '../../includes/header.php';    // Incluir la cabecera
-require_once '../../includes/sidebar.php';
-
-// Definir los roles permitidos para esta página
-$allowRole = [3];
-require_once '../../includes/rol_check.php';
-
-// Cargar datos del usuario desde la sesión
-$usuario = (object)[
-    'nombre_completo' => $_SESSION['nombre_completo']
-];
-
-// Simulación de datos para la sección de materias
-$materias = [
-    (object)['nombre' => 'Matemáticas', 'descripcion' => 'Álgebra y geometría'],
-    (object)['nombre' => 'Física', 'descripcion' => 'Leyes del movimiento']
-];
+$pageTitle = 'Panel del Profesor';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Profesor</title>
-    <link rel="stylesheet" href="/assets/css/profesor.css">
-</head>
-<body>
-    <header>
-        <h1>Bienvenido, <?php echo htmlspecialchars($usuario->nombre_completo); ?></h1>
-        <nav>
-            <a href="/profesor/editarNotas">Editar Notas</a>
-            <a href="/profesor/registrarAsistencia">Registrar Asistencia</a>
-            <a href="/profesor/verAsistencia">Ver Asistencia</a>
-        </nav>
-    </header>
-    <section>
-        <h2>Mis Materias</h2>
-        <ul>
-            <?php foreach ($materias as $materia): ?>
-                <li><?php echo htmlspecialchars($materia->nombre); ?> - <?php echo htmlspecialchars($materia->descripcion); ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </section>
-</body>
-</html>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bienvenido, <?php echo htmlspecialchars($_SESSION['user_name'] ?? $_SESSION['user'] ?? 'Profesor'); ?></h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <a href="/notas" class="card shadow h-100 py-2 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                    <h5 class="card-title">Gestionar Notas</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <a href="/asistencia" class="card shadow h-100 py-2 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                    <h5 class="card-title">Registrar Asistencia</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <a href="/observaciones" class="card shadow h-100 py-2 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2"></i>
+                    <h5 class="card-title">Agregar Observaciones</h5>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
+
 <?php
-require_once '../../includes/footer.php';    // Incluir el pie de página
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
