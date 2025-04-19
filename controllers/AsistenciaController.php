@@ -12,7 +12,7 @@ class AsistenciaController {
     public function __construct() {
         session_start();
         // Solo Profesores y Coordinadores pueden gestionar asistencia
-        $rol = $_SESSION['rol'] ?? null,
+        $rol = $_SESSION['rol'] ?? null;
         if (!in_array($rol, ['Profesor', 'Coordinador'])) {
             header('Location: /auth/denied_access');
             exit;
