@@ -2,7 +2,7 @@
 // Refactorización con CSRF, modelo Usuario y flujo de login/logout y selección de rol
 
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../models/UsuarioAuth.php';
 
 class AuthController {
     private $userModel;
