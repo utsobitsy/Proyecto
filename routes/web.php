@@ -16,10 +16,21 @@ use Controllers\ProfesorController;
 // Inicializar router (ejemplo con AltoRouter o similar)
 $router = new \AltoRouter();
 
+// Ajustar base path a la subcarpeta del proyecto en XAMPP
+try {
+    $router->setBasePath('/proyecto/Proyecto');
+} catch (\Exception $e) {
+    // Ignorar si no coincide
+}
+
+// Ruta por defecto: redirigir la raíz al login
+$router->get('', [AuthController::class, 'showLoginForm']);
+$router->get('/', [AuthController::class, 'showLoginForm']);
+
 // Auth
 $router->get ('/auth/login',            [AuthController::class, 'showLoginForm']);
 $router->post('/auth/login',            [AuthController::class, 'login']);
-$router->get ('/auth/select-role',      [AuthController::class, 'showSelectRole'] ?? [AuthController::class, 'showLoginForm']);
+$router->get ('/auth/select-role',      [AuthController::class, 'showSelectRole']);
 $router->post('/auth/select-role',      [AuthController::class, 'selectRole']);
 $router->get ('/auth/logout',           [AuthController::class, 'logout']);
 
@@ -47,15 +58,15 @@ $router->get ('/estudiante/dashboard',  [EstudianteController::class, 'dashboard
 $router->get ('/estudiante/notas',      [EstudianteController::class, 'notas']);
 $router->get ('/estudiante/horario',    [EstudianteController::class, 'horario']);
 
-// Horario (si aplica controlador independiente)
-$router->get ('/horario',               [HorarioController::class, 'index'] ?? [EstudianteController::class, 'horario']);
+// Horario
+$router->get ('/horario',               [HorarioController::class, 'index']);
 $router->get ('/horario/create',        [HorarioController::class, 'create']);
 $router->post('/horario/store',         [HorarioController::class, 'store']);
 
 // Mensajería
 $router->get ('/mensajes',              [MensajeriaController::class, 'index']);
 $router->post('/mensajes/send',         [MensajeriaController::class, 'send']);
-$router->get ('/mensajes/conversacion', [MensajeriaController::class, 'getConversation']);
+$router->get ('/mensajes/conversacion', [MensajeriaController::class, 'conversation']);
 
 // Notas
 $router->get ('/notas',                 [NotasController::class, 'index']);
@@ -91,4 +102,3 @@ if ($match && is_array($match['target'])) {
     header("HTTP/1.0 404 Not Found");
     echo "Página no encontrada";
 }
-?>

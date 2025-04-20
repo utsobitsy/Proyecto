@@ -1,15 +1,30 @@
-# Habilitar la reescritura de URLs
-RewriteEngine On
+# .htaccess (Proyecto Sistema Colegio)
 
-# Redirigir a un indice amigable si no se proporciona un archivo especifico
-RewriteBase /nombre-proyecto/
+# Evitar listado de directorios
+Options -Indexes
 
-# Reglas de reescritura para URLs amigables
-RewriteRule ^login$ /ruta [L]
-RewriteRule ^dashboard$ /ruta [L]
-RewriteRule ^notas$ /ruta [L]
-RewriteRule ^asistencia$ /ruta [L]
-RewriteRule ^usuarios$ /ruta [L]
+<IfModule mod_rewrite.c>
+    # Activar motor de reescritura
+    RewriteEngine On
 
-# Redirigir todas las demás solicitudes a index.php
-RewriteRule ^(.*)$ /ruta [QSA,L]
+    # Define la base del proyecto (ajusta si no está en la raíz de htdocs)
+    RewriteBase /proyecto/Proyecto/
+
+    # Reglas de reescritura para URLs amigables
+    RewriteRule ^login$ views/auth/login.php [L]
+    
+    # Si no es archivo ni directorio, enviar a index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L,QSA]
+
+    # Forzar https (opcional)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Protección contra acceso a archivos sensibles
+<FilesMatch "\.(env|ini|log|sql|gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
