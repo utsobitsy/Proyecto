@@ -4,7 +4,7 @@
     <?php if (!empty($_SESSION['flash_error'])): ?>
         <div class="alert alert-danger"><?php echo $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?></div>
     <?php endif; ?>
-    <form action="/auth/login" method="POST">
+    <form action="/proyecto/Proyecto/auth/login" method="POST">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <div class="mb-3">
             <label for="email" class="form-label">Correo electrónico</label>

@@ -87,19 +87,19 @@ class AuthController {
     private function redirectByRole(string $rol) {
         switch ($rol) {
             case 'Administrador':
-                header('Location: /admin/usuarios'); break;
+                header('Location: views/admin/usuarios'); break;
             case 'Coordinador':
-                header('Location: /coordinador/academico'); break;
+                header('Location: views/coordinador/academico'); break;
             case 'Profesor':
-                header('Location: /profesor/dashboard'); break;
+                header('Location: views/profesor/dashboard'); break;
             case 'Estudiante':
                 $_SESSION['rol'] = 'Estudiante';
-                header('Location: /estudiante/dashboard'); break;
+                header('Location: views/estudiante/dashboard'); break;
             case 'Padre':
                 $_SESSION['rol'] = 'Padre';
-                header('Location: /padre/dashboard'); break;
+                header('Location: views/padre/dashboard'); break;
             default:
-                header('Location: /auth/denied_access'); break;
+                header('Location: views/auth/denied_access'); break;
         }
         exit;
     }
