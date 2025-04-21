@@ -1,22 +1,20 @@
 <?php
 // routes/web.php
 
-use controllers\AuthController;
-use controllers\AdminController;
-use controllers\AsistenciaController;
-use controllers\CoordinadorController;
-use controllers\EstudianteController;
-use controllers\HorarioController;
-use controllers\MensajeriaController;
-use controllers\NotasController;
-use controllers\ObservacionesController;
-use controllers\PadreController;
-use controllers\ProfesorController;
-
-require_once __DIR__ . '/../libs/AltoRouter.php';
+use Controllers\AuthController;
+use Controllers\AdminController;
+use Controllers\AsistenciaController;
+use Controllers\CoordinadorController;
+use Controllers\EstudianteController;
+use Controllers\HorarioController;
+use Controllers\MensajeriaController;
+use Controllers\NotasController;
+use Controllers\ObservacionesController;
+use Controllers\PadreController;
+use Controllers\ProfesorController;
 
 // Inicializar router (ejemplo con AltoRouter o similar)
-$router = new \AltoRouter();
+$router = new AltoRouter();
 
 // Ajustar base path a la subcarpeta del proyecto en XAMPP
 try {
@@ -26,7 +24,6 @@ try {
 }
 
 // Ruta por defecto: redirigir la raíz al login
-$router->map('GET', '', [AuthController::class, 'showLoginForm']);
 $router->map('GET', '/', [AuthController::class, 'showLoginForm']);
 
 // Auth

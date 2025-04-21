@@ -16,7 +16,7 @@ Options -Indexes
     # Si no es archivo ni directorio, enviar a index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+    RewriteRule ^(.*)$ index.php [QSA,L]
 
     # Forzar https (opcional)
     # RewriteCond %{HTTPS} off
