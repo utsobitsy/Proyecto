@@ -1,6 +1,8 @@
 <?php
 // Modelo UsuarioAuth: Manejo exclusivo de autenticación de usuarios
 
+namespace Models;
+
 require_once __DIR__ . '/../config/db.php';
 
 class UsuarioAuth {

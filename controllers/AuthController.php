@@ -1,17 +1,18 @@
 <?php
 // Refactorización con CSRF, modelo Usuario y flujo de login/logout y selección de rol
 
+namespace Controllers;
+use Models\UsuarioAuth;
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/UsuarioAuth.php';
-
-namespace Controllers;
 
 class AuthController {
     private $userModel;
 
     public function __construct() {
         session_start();
-        $this->userModel = new Usuario();
+        $this->userModel = new UsuarioAuth();
     }
 
     // Mostrar formulario de login
