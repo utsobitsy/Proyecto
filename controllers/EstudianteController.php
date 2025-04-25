@@ -1,6 +1,8 @@
 <?php
 // Controlador para funciones del estudiante
 
+namespace Controllers;
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Nota.php';

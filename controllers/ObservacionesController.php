@@ -1,4 +1,7 @@
 <?php
+
+namespace Controllers;
+
 require_once __DIR__ . '/../models/Observacion.php';
 require_once __DIR__ . '/../config/db.php';
 

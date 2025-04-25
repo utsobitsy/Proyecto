@@ -1,4 +1,7 @@
 <?php
+
+namespace Controllers;
+
 require_once __DIR__ . '/../models/Mensaje.php';
 require_once __DIR__ . '/../config/db.php';
 

@@ -2,6 +2,8 @@
 // Funcionalidades para profesor: acceso al modulo de notas, asistencia y observaciones
 // Refactorización del controlador
 
+namespace Controllers;
+
 require_once __DIR__ . '/../config/db.php';
 
 class ProfesorController {

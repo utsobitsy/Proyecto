@@ -1,6 +1,8 @@
 <?php
 // Refactorización para gestión de horarios y visualización según rol
 
+namespace Controllers;
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Horario.php';
 require_once __DIR__ . '/../models/Usuario.php';

@@ -1,9 +1,9 @@
 --  schema.sql (Versión Modificada)
 
 --  Eliminar la base de datos si existe y crearla de nuevo
-DROP DATABASE IF EXISTS sistema_colegio;
-CREATE DATABASE sistema_colegio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE sistema_colegio;
+DROP DATABASE IF EXISTS sistema;
+CREATE DATABASE sistema CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE sistema;
 
 --  Tabla de roles
 CREATE TABLE roles (

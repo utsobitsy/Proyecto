@@ -1,6 +1,8 @@
 <?php
     // Refactorización usando modelos, validación, CSRF y paginación
 
+namespace Controllers;
+
 require once __DIR__ . '/../config/db.php';
 require once __DIR__ . '/../models/Usuario.php';
 require once __DIR__ . '/../models/Rol.php';
